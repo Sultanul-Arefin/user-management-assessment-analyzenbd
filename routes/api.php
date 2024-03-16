@@ -10,11 +10,9 @@ Route::get('/user', function (Request $request) {
 
 Route::middleware(['json.response'])->prefix('v1')->group(function(){
     Route::middleware(['guest'])->group(function () {
-        Route::post('/register', [AuthController::class, 'store'])
-            ->middleware('guest');
+        Route::post('/register', [AuthController::class, 'store']);
 
-        Route::post('/login', [AuthController::class, 'store'])
-            ->middleware('guest');
+        Route::post('/login', [AuthController::class, 'store']);
 
     });
 });
