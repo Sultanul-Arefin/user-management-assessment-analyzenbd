@@ -10,17 +10,22 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
     public function register(RegisterUserRequest $request): JsonResponse
     {
         try{
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => $request->password
-            ]);
+            $user = DB::transaction(function()use($request){
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => $request->password
+                ]);
+                $user->update(['created_by' => $user->id]);
+                return $user;
+            });
         } catch(Exception $e){
             throw new CustomException('Oops! something wrong, please try again', 422);
         }
