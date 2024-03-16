@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -88,6 +89,18 @@ return Application::configure(basePath: dirname(__DIR__))
                 ];
     
                 return response()->json($response, 404);
+            }
+        });
+        // Route Not Found CUSTOM EXCEPTION
+        $exceptions->render(function(RouteNotFoundException $e, Request $request){
+            if($request->is('api/*')){
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Unauthenticated Request!',
+                    'data' => [],
+                ];
+    
+                return response()->json($response, 401);
             }
         });
         // CUSTOM EXCEPTION
