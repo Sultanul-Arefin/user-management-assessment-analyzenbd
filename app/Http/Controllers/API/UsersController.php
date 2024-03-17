@@ -33,10 +33,23 @@ class UsersController extends Controller
     public function store(CreateUserRequest $request)
     {
         try{
+            $avatar = null;
+            if($request->has('avatar'))
+            {
+                $file = $request->file('avatar');
+
+                if ($file) {
+                    $desired_path = "uploads/user/avatar/";
+                    $image_name = rand(10000, 50000).'_'.time().'.'.$file->extension();
+                    $file->storeAs($desired_path, $image_name, 'public');
+                    $avatar = $desired_path.$image_name;
+                }
+            }
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => $request->password,
+                'avatar' => $avatar,
                 'created_by' => auth()->user()->id
             ]);
         } catch(Exception $e){
@@ -54,6 +67,7 @@ class UsersController extends Controller
      */
     public function show(User $user)
     {
+        $user->avatar = $user->avatar ? env('APP_URL') . '/' . $user->avatar : null;
         return apiResponse(
             data: $user
         );
@@ -69,6 +83,7 @@ class UsersController extends Controller
             'email' => $request->email,
             'password' => $request->password
         ]);
+        $user->avatar = $user->avatar ? env('APP_URL') . '/' . $user->avatar : null;
 
         return apiResponse(
             data: $user,

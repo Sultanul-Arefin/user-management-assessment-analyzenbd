@@ -26,6 +26,7 @@ class UserResource extends JsonResource
                     'email',
                 ])
             ),
+            'avatar' => $this->avatar ? env('APP_URL') . '/' . $this->avatar : null,
             'created_by_user' => $this->created_by_user->only(['id', 'name', 'email']),
             'deleted_at' => $this->deleted_at ? date('Y-m-d H:i:s a', strtotime($this->deleted_at)) : null
         ];
