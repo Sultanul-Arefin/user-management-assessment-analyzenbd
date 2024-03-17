@@ -6,52 +6,46 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use App\Http\Services\Interfaces\UserRepositoryInterface;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(
+        public UserRepositoryInterface $userRepo
+    )
+    {
+    }
+
     public function index()
     {
-        $user = User::query()
-                ->where('created_by', auth()->user()->id)
-                ->with(['created_by_user'])
-                ->paginate();
-
         return UserResource::collection(
-            $user
+            $this->userRepo->allWithSearch(
+                ['*'],
+                ['created_by_user']
+            )
         );
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreateUserRequest $request)
     {
         try{
-            $avatar = null;
-            if($request->has('avatar'))
-            {
-                $file = $request->file('avatar');
-
-                if ($file) {
-                    $desired_path = "uploads/user/avatar/";
-                    $image_name = rand(10000, 50000).'_'.time().'.'.$file->extension();
-                    $file->storeAs($desired_path, $image_name, 'public');
-                    $avatar = $desired_path.$image_name;
-                }
-            }
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => $request->password,
-                'avatar' => $avatar,
-                'created_by' => auth()->user()->id
+            $avatar = $this->get_avatar($request);
+            $request->request->add([
+                'created_by' => auth()->user()->id,
+                'avatar' => $avatar // changing the image key to 'avatar' for mass assignment
             ]);
+            $user = $this->userRepo->create(
+                $request->only([
+                    'name',
+                    'email',
+                    'password',
+                    'avatar',
+                    'created_by'
+                ])
+            );
         } catch(Exception $e){
             throw new CustomException('Oops! something wrong, please try again', 422);
         }
@@ -62,9 +56,23 @@ class UsersController extends Controller
         );
     }
 
-    /**
-     * Display the specified resource.
-     */
+    private function get_avatar($request)
+    {
+        $avatar = null;
+        if($request->has('user_avatar'))
+        {
+            $file = $request->file('user_avatar');
+
+            if ($file) {
+                $desired_path = "uploads/user/avatar/";
+                $image_name = rand(10000, 50000).'_'.time().'.'.$file->extension();
+                $file->storeAs($desired_path, $image_name, 'public');
+                $avatar = $desired_path.$image_name;
+            }
+        }
+        return $avatar;
+    }
+
     public function show(User $user)
     {
         $user->avatar = $user->avatar ? env('APP_URL') . '/' . $user->avatar : null;
@@ -73,9 +81,6 @@ class UsersController extends Controller
         );
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(User $user, UpdateUserRequest $request)
     {
         $user->update([
@@ -91,9 +96,6 @@ class UsersController extends Controller
         );
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(User $user, Request $request)
     {
         $user->delete();
@@ -106,15 +108,19 @@ class UsersController extends Controller
 
     public function soft_deleted_users()
     {
-        $soft_deleted_users = User::onlyTrashed()->paginate();
         return UserResource::collection(
-            $soft_deleted_users
+            $this->userRepo->getTrashedUser(
+                ['*'],
+                ['created_by_user']
+            )
         );
     }
 
     public function restore_soft_deleted_user($user_id)
     {
-        $user = User::onlyTrashed()->findOrFail($user_id);
+        $user = $this->userRepo->findByIdTrashedUser(
+            $user_id,
+        );
         $user->restore();
         return apiResponse(
             data: $user,
@@ -124,7 +130,9 @@ class UsersController extends Controller
 
     public function permanent_delete_soft_deleted_user($user_id)
     {
-        $user = User::onlyTrashed()->findOrFail($user_id);
+        $user = $this->userRepo->findByIdTrashedUser(
+            $user_id,
+        );
         $user->forceDelete();
         return apiResponse(
             data: [],
