@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Events\UserCreatedEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Services\Interfaces\UserRepositoryInterface;
 use App\Models\User;
+use App\Traits\UserAddress;
 use Closure;
 use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
+    use UserAddress;
+
     public function __construct(
         public UserRepositoryInterface $userRepo
     )
@@ -46,6 +50,7 @@ class UsersController extends Controller
                     'created_by'
                 ])
             );
+            event(new UserCreatedEvent($user, $request->address));
         } catch(Exception $e){
             throw new CustomException('Oops! something wrong, please try again', 422);
         }

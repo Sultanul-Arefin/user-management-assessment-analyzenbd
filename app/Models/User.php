@@ -67,4 +67,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class, 'created_by', 'id');
     }
+
+    /**
+     * @return HasMany
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(UserAddress::class, 'user_id', 'id');
+    }
 }

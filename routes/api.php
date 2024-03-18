@@ -21,10 +21,18 @@ Route::middleware(['json.response'])->prefix('v1')->group(function(){
 
     // AUTHENTICATED REQUESTS
     Route::middleware(['auth:sanctum'])->group(function(){
-        // USER ROUTES
+        // USER
         Route::apiResource('/user', UsersController::class);
+
+        // USER SOFT DELETE
         Route::get('soft-deleted-users', [UsersController::class, 'soft_deleted_users']);
         Route::get('restore-soft-deleted-user/{user_id}', [UsersController::class, 'restore_soft_deleted_user']);
         Route::delete('delete-soft-deleted-user/{user_id}', [UsersController::class, 'permanent_delete_soft_deleted_user']);
+
+        // USER ADDRESS
+        Route::get('user-address/{user}', [UsersController::class, 'user_address']);
+        Route::post('user-address', [UsersController::class, 'store_user_address']);
+        Route::patch('user-address/{user_address}', [UsersController::class, 'update_user_address']);
+        Route::delete('user-address/{user_address}', [UsersController::class, 'destroy_user_address']);
     });
 });
