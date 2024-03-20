@@ -115,4 +115,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json($response, $e->getCode());
             }
         });
+        // ARGUMENT COUNT CUSTOM EXCEPTION
+        $exceptions->render(function(ArgumentCountError $e, Request $request){
+            if($request->is('api/*')){
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Passed Argument Count is Wrong!',
+                    'data' => [],
+                ];
+    
+                return response()->json($response, 422);
+            }
+        });
     })->create();
