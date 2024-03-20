@@ -9,6 +9,7 @@ use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -58,6 +59,16 @@ class AuthController extends Controller
                 'user_info' => $user->only(['id', 'name', 'email', 'last_login'])
             ],
             message: 'User logged in successful'
+        );
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::user()->tokens()->delete();
+
+        return apiResponse(null,
+            message: 'Successfully logged out',
+            status: 'success',
         );
     }
 }
