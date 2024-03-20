@@ -3,7 +3,9 @@
 
 Installation process & other necessary requirements for run the project.
 
-
+## Requirements
+- Need PHP 8.2 or above
+- Need Composer 2
 
 
 ## Installation
