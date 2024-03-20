@@ -73,4 +73,48 @@ class UsersTest extends TestCase
             'users', ['email' => 'test@test.com']
         );
     }
+
+    /**
+     * @test
+     */
+    public function itChecksThatUserCanBeUpdated(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $response = $this->put(route('user.update', $user->id), [
+            'name' => 'Test User',
+            'email' => 'test@test.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'address' => 'Dhaka',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertOk();
+        $this->assertEquals(
+            'Test User', 
+            $response->json('data.name')
+        );
+        $this->assertEquals(
+            'test@test.com',
+            $response->json('data.email')
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function itChecksThatUserCanBeDeleted(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $userForDeleting = User::factory()->create();
+        $this->delete(route('user.destroy', $userForDeleting->id));
+        $this->assertSoftDeleted('users', [
+            'id' => $userForDeleting->id,
+            'email' => $userForDeleting->email
+        ]);
+    }
 }
