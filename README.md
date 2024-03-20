@@ -20,7 +20,11 @@ For Running the project
   composer install
 ```
 Next
-- update the .env file
+- copy the .env file from .env.example
+- generate the application key by
+```bash
+    php artisan key:generate
+```
 - setup the database
 - run the migration by
 ```bash
