@@ -14,13 +14,13 @@ Route::middleware(['json.response'])->prefix('v1')->group(function(){
     Route::middleware(['guest'])->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
-
-        
-        
     });
 
     // AUTHENTICATED REQUESTS
     Route::middleware(['auth:sanctum'])->group(function(){
+        // LOGOUT
+        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
         // USER
         Route::apiResource('user', UsersController::class);
 
