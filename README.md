@@ -40,6 +40,10 @@ Next
 ```bash
     php artisan migrate:fresh --seed
 ```
+- Finally, create a symlink to storage folder by running
+```bash
+    php artisan storage:link
+```
 
     
 ## Running Tests
